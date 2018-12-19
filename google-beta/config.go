@@ -26,6 +26,7 @@ import (
 	"google.golang.org/api/cloudkms/v1"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	resourceManagerV2Beta1 "google.golang.org/api/cloudresourcemanager/v2beta1"
+	"google.golang.org/api/cloudscheduler/v1beta1"
 	"google.golang.org/api/composer/v1beta1"
 	computeBeta "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/compute/v1"
@@ -83,6 +84,7 @@ type Config struct {
 	clientRedis                  *redis.Service
 	clientResourceManager        *cloudresourcemanager.Service
 	clientResourceManagerV2Beta1 *resourceManagerV2Beta1.Service
+	clientCloudScheduler         *cloudscheduler.Service
 	clientRuntimeconfig          *runtimeconfig.Service
 	clientSpanner                *spanner.Service
 	clientSourceRepo             *sourcerepo.Service
@@ -275,6 +277,12 @@ func (c *Config) loadAndValidate() error {
 		return err
 	}
 	c.clientResourceManagerV2Beta1.UserAgent = userAgent
+
+	log.Printf("[INFO] Instantiating Google Cloud Scheduler Client...")
+	c.clientCloudScheduler, err = cloudscheduler.New(client)
+	if err != nil {
+		return err
+	}
 
 	log.Printf("[INFO] Instantiating Google Cloud Runtimeconfig Client...")
 	c.clientRuntimeconfig, err = runtimeconfig.New(client)

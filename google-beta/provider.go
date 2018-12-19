@@ -139,6 +139,7 @@ func ResourceMapWithErrors() (map[string]*schema.Resource, error) {
 			"google_cloudbuild_trigger":                    resourceCloudBuildTrigger(),
 			"google_cloudfunctions_function":               resourceCloudFunctionsFunction(),
 			"google_cloudiot_registry":                     resourceCloudIoTRegistry(),
+			"google_cloudscheduler_job":                    resourceCloudSchedulerJob(),
 			"google_composer_environment":                  resourceComposerEnvironment(),
 			"google_compute_attached_disk":                 resourceComputeAttachedDisk(),
 			"google_compute_backend_service":               resourceComputeBackendService(),
