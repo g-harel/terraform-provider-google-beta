@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
-	cloudscheduler "google.golang.org/api/cloudscheduler/v1beta1"
+	"google.golang.org/api/cloudscheduler/v1beta1"
 )
 
 /*
@@ -16,48 +16,45 @@ import (
 https://cloud.google.com/scheduler/docs/reference/rest/v1beta1/projects.locations.jobs
 
 TODO
-- validation
-- import
-- update
-- create
-- read
-- delete
-- exists
+- field validation
+- import/update/create/read/delete/exists
+- tests
+- documentation (website)
 
 */
 
-type jobId struct {
+type cloudSchedulerJobId struct {
 	Project string
 	Region  string
 	Name    string
 }
 
-func (s *jobId) jobId() string {
+func (s *cloudSchedulerJobId) jobId() string {
 	return fmt.Sprintf("projects/%s/locations/%s/jobs/%s", s.Project, s.Region, s.Name)
 }
 
-func (s *jobId) locationId() string {
+func (s *cloudSchedulerJobId) locationId() string {
 	return fmt.Sprintf("projects/%s/locations/%s", s.Project, s.Region)
 }
 
-func (s *jobId) terraformId() string {
+func (s *cloudSchedulerJobId) terraformId() string {
 	return fmt.Sprintf("%s/%s/%s", s.Project, s.Region, s.Name)
 }
 
-func parseJobId(id string, config *Config) (*jobId, error) {
+func parseJobId(id string, config *Config) (*cloudSchedulerJobId, error) {
 	parts := strings.Split(id, "/")
 
-	cloudFuncIdRegex := regexp.MustCompile("^([a-z0-9-]+)/([a-z0-9-])+/([a-zA-Z0-9_-]{1,63})$")
+	cloudSchedulerJobIdRegex := regexp.MustCompile("^([a-z0-9-]+)/([a-z0-9-])+/([a-zA-Z0-9_-]{1,63})$")
 
-	if cloudFuncIdRegex.MatchString(id) {
-		return &jobId{
+	if cloudSchedulerJobIdRegex.MatchString(id) {
+		return &cloudSchedulerJobId{
 			Project: parts[0],
 			Region:  parts[1],
 			Name:    parts[2],
 		}, nil
 	}
 
-	return nil, fmt.Errorf("Invalid Job id format, expecting " +
+	return nil, fmt.Errorf("Invalid Cloud Scheduler Job id format, expecting " +
 		"`{projectId}/{regionId}/{jobName}`")
 }
 
@@ -74,22 +71,26 @@ func resourceCloudSchedulerJob() *schema.Resource {
 				ForceNew: true,
 				Required: true,
 			},
+
 			"description": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringLenBetween(0, 500),
 			},
+
 			"schedule": {
 				Type:     schema.TypeString,
 				ForceNew: true,
 				Required: true,
 			},
+
 			"time_zone": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
+
 			"retry_config": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -121,6 +122,7 @@ func resourceCloudSchedulerJob() *schema.Resource {
 					},
 				},
 			},
+
 			"pubsub_target": {
 				Type:          schema.TypeList,
 				Optional:      true,
@@ -144,6 +146,7 @@ func resourceCloudSchedulerJob() *schema.Resource {
 					},
 				},
 			},
+
 			"app_engine_http_target": {
 				Type:          schema.TypeList,
 				Optional:      true,
@@ -192,6 +195,7 @@ func resourceCloudSchedulerJob() *schema.Resource {
 					},
 				},
 			},
+
 			"http_target": {
 				Type:          schema.TypeList,
 				Optional:      true,
@@ -417,7 +421,7 @@ func resourceCloudSchedulerJobCreate(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	jobId := &jobId{
+	jobId := &cloudSchedulerJobId{
 		Project: project,
 		Region:  region,
 		Name:    d.Get("name").(string),
