@@ -1,6 +1,7 @@
 package google
 
 import (
+	"encoding/base64"
 	"fmt"
 	"log"
 	"regexp"
@@ -162,6 +163,7 @@ func resourceCloudSchedulerJob() *schema.Resource {
 						"app_engine_routing": {
 							Type:     schema.TypeList,
 							Optional: true,
+							ForceNew: true,
 							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -282,7 +284,6 @@ func expandAppEngineRouting(configured []interface{}) *cloudscheduler.AppEngineR
 
 	data := configured[0].(map[string]interface{})
 	return &cloudscheduler.AppEngineRouting{
-		Host:     data["host"].(string),
 		Instance: data["instance"].(string),
 		Service:  data["service"].(string),
 		Version:  data["version"].(string),
@@ -296,7 +297,6 @@ func flattenAppEngineRouting(appEngineRouting *cloudscheduler.AppEngineRouting) 
 	}
 
 	result = append(result, map[string]interface{}{
-		"host":     appEngineRouting.Host,
 		"instance": appEngineRouting.Instance,
 		"service":  appEngineRouting.Service,
 		"version":  appEngineRouting.Version,
@@ -317,7 +317,7 @@ func expandAppEngineHttpTarget(configured []interface{}) *cloudscheduler.AppEngi
 		headers[k] = val.(string)
 	}
 	return &cloudscheduler.AppEngineHttpTarget{
-		Body:             data["uri"].(string),
+		Body:             base64.StdEncoding.EncodeToString([]byte(data["body"].(string))),
 		Headers:          headers,
 		HttpMethod:       data["http_method"].(string),
 		RelativeUri:      data["relative_uri"].(string),
@@ -353,10 +353,10 @@ func expandHttpTarget(configured []interface{}) *cloudscheduler.HttpTarget {
 		headers[k] = val.(string)
 	}
 	return &cloudscheduler.HttpTarget{
-		Body:       data["uri"].(string),
+		Body:       base64.StdEncoding.EncodeToString([]byte(data["body"].(string))),
 		Headers:    headers,
 		HttpMethod: data["http_method"].(string),
-		Uri:        data["body"].(string),
+		Uri:        data["uri"].(string),
 	}
 }
 
