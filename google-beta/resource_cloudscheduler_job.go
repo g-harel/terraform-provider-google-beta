@@ -85,7 +85,7 @@ func resourceCloudSchedulerJob() *schema.Resource {
 				ForceNew: true,
 				Required: true,
 			},
-			"timezone": {
+			"time_zone": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
@@ -496,7 +496,7 @@ func resourceCloudSchedulerRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if job.PubsubTarget != nil {
-		d.Set("timezone", job.TimeZone)
+		d.Set("time_zone", job.TimeZone)
 	}
 	d.Set("region", jobId.Region)
 	d.Set("project", jobId.Project)
