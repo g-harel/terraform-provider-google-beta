@@ -467,10 +467,10 @@ func resourceCloudSchedulerJobCreate(d *schema.ResourceData, meta interface{}) e
 	// Name of job should be unique
 	d.SetId(jobId.terraformId())
 
-	return resourceCloudSchedulerRead(d, meta)
+	return resourceCloudSchedulerJobRead(d, meta)
 }
 
-func resourceCloudSchedulerRead(d *schema.ResourceData, meta interface{}) error {
+func resourceCloudSchedulerJobRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
 	jobId, err := parseJobId(d.Id(), config)
@@ -508,14 +508,40 @@ func resourceCloudSchedulerRead(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-func resourceCloudSchedulerJobRead(d *schema.ResourceData, meta interface{}) error {
-	return nil
-}
-
 func resourceCloudSchedulerJobDelete(d *schema.ResourceData, meta interface{}) error {
+	config := meta.(*Config)
+
+	jobId, err := parseJobId(d.Id(), config)
+	if err != nil {
+		return err
+	}
+
+	op, err := config.clientCloudScheduler.Projects.Locations.Jobs.Delete(jobId.jobId()).Do()
+	_ = op
+	if err != nil {
+		return err
+	}
+
+	d.SetId("")
+
 	return nil
 }
 
 func resourceCloudSchedulerJobExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	return false, nil
+	config := meta.(*Config)
+
+	jobId, err := parseJobId(d.Id(), config)
+	if err != nil {
+		return false, err
+	}
+
+	_, err = config.clientCloudScheduler.Projects.Locations.Jobs.Get(jobId.jobId()).Do()
+	if err != nil {
+		if err = handleNotFoundError(err, d, fmt.Sprintf("CloudScheduler Job %s", jobId.Name)); err == nil {
+			return false, nil
+		}
+		// There was some other error in reading the resource
+		return true, err
+	}
+	return true, nil
 }
